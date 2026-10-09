@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Escape Planner: describe a trip, get destination ideas from any AI, and compare them side by side with maps, budgets and routes.">
+<meta name="author" content="Kiyan Amirian">
+<title>Escape Planner · Compare places for your next trip</title>
+<link rel="stylesheet" href="styles.css">
+<script defer src="js/core.js"></script>
+<script defer src="js/ai.js"></script>
+<script defer src="js/map.js"></script>
+<script defer src="js/view.js"></script>
+<script defer src="js/app.js"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-head">
+  <div class="wrap head-row">
+    <a class="brand" href="#/plan"><span class="brandmark" aria-hidden="true">EP</span>Escape Planner</a>
+    <nav class="head-nav" aria-label="Main">
+      <a href="#/plan" data-nav="plan">Plan a trip</a>
+      <a href="#/view" data-nav="view" hidden>Current plan</a>
+      <a href="#/saved" data-nav="saved">Saved trips</a>
+      <a href="#/example" data-nav="example">Example</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+
+<!-- ============ PLAN A TRIP ============ -->
+<section id="view-plan" class="view" hidden>
+  <div class="intro">
+    <h1>Where should you go next?</h1>
+    <p class="lead">Describe your trip. Any AI assistant researches the options, and this page turns its answer into side-by-side comparisons with maps, budgets and routes.</p>
+    <ol class="how">
+      <li><b>Describe</b> who’s going, when, the budget and what matters.</li>
+      <li><b>Ask an AI.</b> Copy the ready-made prompt into ChatGPT, Claude, Gemini or another assistant, or use your own API key here.</li>
+      <li><b>Compare.</b> Paste the answer back to see every option laid out.</li>
+    </ol>
+    <p class="small">Nothing you type leaves your browser unless you send it to an AI yourself. Plans are saved only on this device.</p>
+  </div>
+
+  <form id="brief" class="step" autocomplete="off" novalidate>
+    <h2 class="step-title"><span class="step-num">1</span>Describe your trip</h2>
+    <div class="form-grid">
+      <label class="field span-2"><span class="label-text">Trip name <span class="opt">optional</span></span><input name="title" placeholder="e.g. Christmas with family, Spring break"></label>
+      <label class="field"><span class="label-text">First day</span><input type="date" name="start"></label>
+      <label class="field"><span class="label-text">Last day</span><input type="date" name="end"></label>
+      <label class="field"><span class="label-text">Flexible by</span><select name="flex"><option value="">Exact dates</option><option value="1">± 1 day</option><option value="2">± 2 days</option><option value="3">± 3 days</option><option value="7">± a week</option></select></label>
+      <label class="field wide-m"><span class="label-text">Or roughly when <span class="opt">if no dates</span></span><input name="when" placeholder="e.g. a week in late March"></label>
+
+      <fieldset class="field span-full groups">
+        <legend>Who’s going</legend>
+        <div id="groups"></div>
+        <button type="button" class="button small-button" id="add-group">Add travelers from another city</button>
+      </fieldset>
+
+      <label class="field"><span class="label-text">Budget from</span><input type="number" name="budgetMin" min="0" step="100" inputmode="numeric" placeholder="e.g. 4000"></label>
+      <label class="field"><span class="label-text">Budget up to</span><input type="number" name="budgetMax" min="0" step="100" inputmode="numeric" placeholder="e.g. 5000"></label>
+      <label class="field"><span class="label-text">Currency</span><select name="currency"><option>USD</option><option>EUR</option><option>GBP</option><option>CAD</option><option>AUD</option><option>CHF</option><option>JPY</option><option>INR</option><option>MXN</option><option>BRL</option><option>AED</option><option>TRY</option></select></label>
+      <label class="field wide-m"><span class="label-text">The budget covers</span><input name="budgetCovers" placeholder="e.g. 3 travelers from Washington, DC"></label>
+      <label class="field span-2"><span class="label-text">Lodging <span class="opt">optional</span></span><input name="lodging" placeholder="e.g. one apartment for 4; our group pays 75%"></label>
+      <label class="field span-2"><span class="label-text">Passports / residency <span class="opt">for visa rules</span></span><input name="passports" placeholder="e.g. U.S. passports; or Iranian passports with U.S. green cards"></label>
+
+      <fieldset class="field span-full">
+        <legend>What matters most</legend>
+        <div class="chips-input" id="priorities"></div>
+      </fieldset>
+
+      <label class="field"><span class="label-text">Daytime highs from</span><input type="number" name="tempMin" inputmode="numeric" placeholder="e.g. 65"></label>
+      <label class="field"><span class="label-text">to</span><input type="number" name="tempMax" inputmode="numeric" placeholder="e.g. 85"></label>
+      <label class="field"><span class="label-text">Units</span><select name="tempUnit"><option value="F">°F</option><option value="C">°C</option></select></label>
+      <label class="field"><span class="label-text">Longest flight <span class="opt">hours</span></span><input type="number" name="maxFlight" min="1" max="24" inputmode="numeric" placeholder="e.g. 8"></label>
+      <label class="field span-2"><span class="label-text">Places to consider <span class="opt">optional</span></span><input name="include" placeholder="e.g. anywhere warm; or Mexico, Spain, Portugal"></label>
+      <label class="field span-2"><span class="label-text">Places to leave out <span class="opt">optional</span></span><input name="exclude" placeholder="e.g. places we’ve been: Cancún"></label>
+      <label class="field"><span class="label-text">Trip style</span><select name="stops"><option value="1">One base per option</option><option value="2" selected>Also routes with up to 2 stops</option><option value="3">Also routes with up to 3 stops</option></select></label>
+      <label class="field"><span class="label-text">How many options</span><select name="count"><option>3</option><option>4</option><option selected>5</option><option>6</option><option>7</option><option>8</option></select></label>
+      <label class="field span-2"><span class="label-text">Anything else <span class="opt">optional</span></span><textarea name="notes" rows="3" placeholder="e.g. one of us doesn’t like heights; we loved swimming in cenotes; New Year’s Eve somewhere fun"></textarea></label>
+    </div>
+  </form>
+
+  <section class="step" aria-labelledby="ask-title">
+    <h2 class="step-title" id="ask-title"><span class="step-num">2</span>Ask an AI</h2>
+    <div class="mode-tabs" role="tablist" aria-label="How to ask">
+      <button type="button" role="tab" id="mode-copy" aria-controls="panel-copy" aria-selected="true">Copy a prompt (any AI)</button>
+      <button type="button" role="tab" id="mode-api" aria-controls="panel-api" aria-selected="false" tabindex="-1">Use my API key</button>
+    </div>
+
+    <div id="panel-copy" role="tabpanel" aria-labelledby="mode-copy" class="mode-panel">
+      <p>Copy this prompt and paste it into your AI assistant. If it can search the web, turn that on: prices, entry rules and advisories change. Answers usually take a few minutes.</p>
+      <div class="prompt-box"><textarea id="prompt" rows="12" readonly aria-label="Prompt to copy"></textarea><button type="button" class="button primary" id="copy-prompt">Copy prompt</button></div>
+      <h3 class="paste-title"><span class="step-num">3</span>Paste the AI’s answer</h3>
+      <p class="small">Paste the whole reply. The page finds the plan inside it, even if there’s text around it.</p>
+      <textarea id="answer" rows="8" placeholder="Paste the AI’s answer here"></textarea>
+      <div class="actions"><button type="button" class="button primary" id="show-plan">Show my options</button><label class="button file-button">Open a plan file<input type="file" id="open-file" accept=".json,application/json,text/plain" hidden></label></div>
+      <p class="error" id="answer-error" role="alert" hidden></p>
+    </div>
+
+    <div id="panel-api" role="tabpanel" aria-labelledby="mode-api" class="mode-panel" hidden>
+      <p>Send the prompt straight to an AI provider with your own API key. The key goes only from your browser to that provider; this site has no server. Use a key with a spending limit.</p>
+      <div class="form-grid">
+        <label class="field"><span class="label-text">Provider</span><select id="provider"></select></label>
+        <label class="field"><span class="label-text">Model</span><input id="model" list="model-list" autocomplete="off"><datalist id="model-list"></datalist></label>
+        <label class="field span-2" id="base-wrap" hidden><span class="label-text">Service URL</span><input id="base" placeholder="https://openrouter.ai/api/v1"></label>
+        <label class="field span-2"><span class="label-text"><span id="key-label">API key</span></span><input id="key" type="password" autocomplete="off" spellcheck="false"></label>
+        <label class="check span-2"><input type="checkbox" id="remember"> Remember this key on this device</label>
+        <div class="span-2" id="search-wrap"><label class="check"><input type="checkbox" id="search" checked> Let the AI search the web for current prices and rules</label><p class="small" id="search-note"></p></div>
+      </div>
+      <p class="small" id="key-help"></p>
+      <div class="actions"><button type="button" class="button primary" id="run-api">Get my options</button><button type="button" class="button" id="cancel-api" hidden>Cancel</button></div>
+      <p class="status" id="api-status" role="status" aria-live="polite"></p>
+      <p class="error" id="api-error" role="alert" hidden></p>
+    </div>
+  </section>
+</section>
+
+<!-- ============ CURRENT PLAN ============ -->
+<section id="view-view" class="view" hidden>
+  <div class="plan-toolbar" role="toolbar" aria-label="Plan actions">
+    <button type="button" class="button small-button" data-act="save">Save on this device</button>
+    <button type="button" class="button small-button" data-act="download">Download file</button>
+    <button type="button" class="button small-button" data-act="share">Copy share link</button>
+    <button type="button" class="button small-button" data-act="refine">Ask for changes</button>
+    <a class="button small-button" href="#/plan">Edit the brief</a>
+    <span class="toolbar-gap"></span>
+    <label class="check small-check"><input type="checkbox" id="photos-toggle" checked> Photos from Wikipedia</label>
+    <label class="check small-check">Distances <select id="units"><option value="mi">miles</option><option value="km">km</option></select></label>
+  </div>
+  <p class="status" id="toolbar-status" role="status" aria-live="polite"></p>
+  <section id="refine" class="refine" hidden aria-labelledby="refine-title">
+    <h2 id="refine-title">Ask for changes</h2>
+    <label class="field"><span class="label-text">What should change?</span><textarea id="refine-text" rows="3" placeholder="e.g. Replace Tenerife with somewhere in the Caribbean; make all routes 2 stops; recheck flight prices"></textarea></label>
+    <div class="actions"><button type="button" class="button primary" id="refine-copy">Copy prompt for my AI</button><button type="button" class="button" id="refine-api">Send with my API key</button></div>
+    <label class="field"><span class="label-text">Paste the updated answer</span><textarea id="refine-answer" rows="5"></textarea></label>
+    <div class="actions"><button type="button" class="button primary" id="refine-apply">Update the plan</button></div>
+    <p class="status" id="refine-status" role="status" aria-live="polite"></p>
+    <p class="error" id="refine-error" role="alert" hidden></p>
+  </section>
+  <div id="plan-root"></div>
+</section>
+
+<!-- ============ SAVED ============ -->
+<section id="view-saved" class="view" hidden>
+  <div class="intro"><h1>Saved trips</h1><p class="lead">Plans you saved on this device. They stay in this browser only; download a file to keep a copy or move it to another device.</p></div>
+  <div id="saved-list"></div>
+  <div class="actions"><label class="button file-button">Open a plan file<input type="file" id="open-file-2" accept=".json,application/json,text/plain" hidden></label></div>
+</section>
+
+</main>
+
+<footer class="site-foot">
+  <div class="wrap foot-row">
+    <span>Escape Planner · © 2026 <a href="https://github.com/kamirian" target="_blank" rel="noopener noreferrer">Kiyan Amirian</a>. All rights reserved.</span>
+    <span>Maps: Natural Earth. Airports: OurAirports. Photos: Wikimedia Commons via Wikipedia. Typeface: Lexend (SIL OFL). Map code: d3-geo, topojson (ISC).</span>
+  </div>
+</footer>
+</body>
+</html>

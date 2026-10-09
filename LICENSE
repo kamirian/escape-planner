@@ -1,0 +1,14 @@
+Escape Planner
+Copyright (c) 2026 Kiyan Amirian. All rights reserved.
+
+No permission is granted to copy, modify, distribute or create derivative works
+of this software or its documentation, except as allowed by applicable law or
+with written permission from the copyright holder. Using the published website
+to plan trips is permitted.
+
+Third-party components keep their own licenses:
+- vendor/d3-array.min.js, vendor/d3-geo.min.js, vendor/topojson-client.min.js:
+  ISC License (see vendor/LICENSES.txt).
+- fonts/*.woff2 (Lexend): SIL Open Font License 1.1 (see fonts/OFL.txt).
+- data/world-50m.js: Natural Earth data (public domain), packaged by world-atlas (ISC).
+- data/airports.js: OurAirports data (public domain).
